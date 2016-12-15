@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>2016-12-15-Braids-Talk</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+
+      /* Two-column layout */
+      .left-column {
+        width: 40%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 40%;
+        float: right;
+        padding-top: 1em;
+      }
+
+      .scroll-box {
+        width: 90%;
+        height: 550px;
+        position: relative;
+        overflow: auto;
+        border-style: solid;
+        border-width: 1px;
+        padding: 30px 30px 30px 30px;
+        background-color: #CCCCCC;
+      }
+    </style>
+    <link rel="stylesheet" href="thirdparty/katex/katex.min.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Computing Conley Indices and Connection Matrices for Spaces of Braids
+
+Shaun Harker
+
+Rutgers University
+
+2016-12-15
+
+Joint work with Kelly Spendlove, Miro Kramar, and Konstantin Mischaikow
+
+---
+
+# Abstract
+
+The Conley-Morse approach to dynamics considers a Morse graph -- the Hasse diagram of a flow-defined partial order of isolating neighborhoods -- labelled with an invariant called Conley index. Nontrivial Conley indices indicate non-empty invariant sets. Additional information, taking the form of a connection matrix, relates the Conley indices between isolating neighborhoods. We exhibit the Conley-Morse approach to dynamical systems, along with connection matrix theory, on a computational example due to Ghrist, Van Den Berg, and Vandervorst where one can prove solution forcing results for a class of parabolic PDEs by applying Conley-Morse theory to systems of disentangling braids.
+
+---
+
+# Talk Outline
+
+1. An example: Braid Spaces for Parabolic Partial Differential Equations
+2. Homology
+3. Lattices of Reachable Sets
+4. Lattices of Representable Attracting Blocks
+5. Conley-Morse Graphs
+6. Connection Matrices
+7. Computations
+
+---
+
+class: center, middle
+
+# Part 1. A worked example: Braid Spaces for Parabolic Partial Differential Equations
+
+---
+
+## Discrete parabolic differential equation
+
+
+(Ghrist '03) Let $f\_i : \mathbb{R}^3 \to \mathbb{R}$ such that $f_{i+P} = f_i$ such that $\partial_1 f > 0$, $\partial_2 f > 0$, and  $\partial_3 f \geq 0$. Consider the evolution of functions $u : \mathbb{Z} \to \mathbb{R}$ satisfying
+
+$$\frac{d u\_i}{dt} = f\_i (u\_{i-1}, u\_i, u\_{i+1}).$$
+
+This is a _discrete parabolic differential equation_. We are interested in studying the behavior of period $P$ functions (i.e. $u_{i+P} = u_i$) which evolve according to this rule.
+
+Given knowledge of a few stationary solutions with periods that are integer multiples of $P$, we can make rigorous statements (i.e. prove _forcing theorems_) about the dynamics of this system.
+
+---
+
+## Braid Diagrams
+
+A complicated braid diagram with $P = 6$ with 3 stationary solutions, two of period $6$ and one with period $12$:
+
+.center[
+![:scale 50%](./images//6DBraidDiagram.png)
+
+(Example from Ghrist '06)
+]
+
+---
+
+## Comparison Principle
+
+A relative braid diagram with $P = 2$ with 4 stationary solutions of period 2, with a _free strand_ $u$ pictured in yellow:
+
+.left-column[
+![:scale 130%](./images//2DBraidDiagram.png)
+(Example from Ghrist '06)
+]
+.right-column[
+* _Lap number_: # positive crossings
+* Idea: Parabolic PDEs are smoothing
+* Example: heat equation.
+* Hence, lap number never increases
+]
+
+---
+
+## Relative Braid Complex
+
+.left-column[
+![:scale 130%](./images//2DBraidDiagram.png)
+(Figure from Ghrist '06)
+]
+.right-column[.left[![:scale 130%](./images//2DRelativeBraidComplex.png)]]
+
+---
+
+## A Dynamical Theorem
+
+There _must_ be invariant dynamics inside of the yellow relative braid class, since it has the Conley index of a hyperbolic fixed point:
+
+.center[![](./images/2DYellowBraidClass.png)]
+
+---
+
+## Computing Lap Numbers for Domains
+
+Why stop there?
+
+.center[
+
+![:scale 70%](./images/2DRelativeBraidLapNumbers.png)
+
+]
+
+---
+
+
+## Directed Graph
+
+Goal: Make a directed graph which has an edge between any two adjacent domains for which we cannot prove transversality on the closure of the codimension-1 wall between them. To this end, we: 
+
+.right-column[
+* Make edges both ways when lap numbers are the same
+* Make edges one way when lap number decreases
+* "Censor" the collapsed braids by connecting all surrounding domains in all ways
+]
+.left-column[
+![:scale 150%](./images/2DRelativeBraidGraph.png)
+]
+
+---
+
+## Morse Decompositions, Conley Index, and Connection Matrices
+
+There is an entire structure here. The machinery we explore in this talk will be
+
+* Morse Decompositions,
+* Conley Index, and
+* Connection Matrices.
+
+---
+
+## Morse Decomposition
+
+* Roughly speaking: make "black boxes" around all complicated dynamics
+* We give a partial order on the "black boxes" which respects the flow
+* Computationally, this corresponds to a strongly connected components calculation:
+
+.left-column[
+![:scale 110%](./images/2DStronglyConnectedComponents.png)
+
+]
+.right-column[
+![:scale 80%](./images/2DMorseGraph.png)
+]
+
+---
+
+## Conley Index
+
+* Each Morse graph node is associated to an _isolating neighborhood_.
+* We can construct a _Conley index pair_ for these isolating neighborhoods.
+* The rough idea is it is the isolating neighborhood modulo its exit set.
+* We can handle homology of pairs via "excision" (i.e. remove the exit set cells)
+* Thus, in our setting, Conley index pairs are just subcomplexes:
+
+.center[![:scale 50%](./images/2DIndexSubcomplexes.png)]
+
+---
+
+## Conley-Morse Graph
+
+.center[![:scale 80%](./images/2DConleyIndex.png)]
+
+---
+
+## Connection Matrix
+
+.center[![:scale 80%](./images/2DConnectionMatrixVisualization.png)]
+
+---
+
+class: center, middle
+
+# Part 2. Homology
+
+.left[
+* Cell Complexes
+* Cycles and Boundaries
+* Homology
+* Collapses
+* Homology via Sequences of Collapses
+* Generators via Reversing Sequence of Collapses
+]
+
+---
+
+## Cell Complexes
+
+General idea: 
+
+* Given: a finite set of cells $\mathcal{X}_k$ for dimensions $k = 0, 1, \cdots, d$. 
+* Given: a _face relationship $<$ _ between $\mathcal{X}\_k$ and $\mathcal{X}\_{k+1}$ 
+* Define: $\mathcal{C}\_k := 2^{\mathcal{X}\_k}$ is the set of _$k$-chains_, i.e. sets of $k$-cells.
+* Define: $ + : \mathcal{C}\_k \times \mathcal{C}\_k $ via _symmetric difference of sets_. 
+* Define: For $\sigma \in \mathcal{X}\_k$ define $\partial\_k \\{\sigma\\} = \\{ \tau \in \mathcal{X}\_{k-1} : \tau < \sigma\\}$
+* Define: Extend $\partial\_k$ to $\partial\_k : \mathcal{C}\_k \to \mathcal{C}\_{k-1}$ via linearity.
+* Requirement: $\partial\_{k} \circ \partial\_{k+1} = 0$. 
+
+More generally we can axiomatize _chain complexes_ directly:
+
+* $\mathcal{C}\_k $ is a finite dimensional vector space over $\mathbb{F}\_2$ for $k = 0, 1, \cdots, d.$
+* $\partial\_{k+1} : \; \mathcal{C}\_{k+1} \to \mathcal{C}\_k$ for $k = 0, 1, \cdots, d-1.$
+* $\partial\_k \circ \partial\_{k+1} = 0 $
+
+---
+
+![:scale 100%](./images/CellComplex1.png)
+
+**Definition.** Define $\partial\_{k+1}:\; \mathcal{C}\_{k+1} \to \, \mathcal{C}\_k$ to be the unique linear map satisfying $\partial\_{k+1} \\{\sigma\\} = (\text{boundary of }\sigma)$ for all $k = 0,1,\cdots,d-1$, and all $\sigma \in \mathcal{X}\_{k+1}$.
+
+---
+
+![:scale 100%](./images/CellComplex2.png)
+
+---
+
+## Cycles and Boundaries
+
+![:scale 90%](./images/CyclesAndBoundaries.png)
+
+* Cycles are chains with zero boundary, i.e. $\partial c = 0$, $Z\_k = \text{ker }\partial_k$.
+* Boundaries are chains in the image of $\partial$, i.e. $B\_k = \text{im }\partial_{k+1}$.
+* The assumption that $\partial\_{k}\circ\partial\_{k+1} = 0$ is equivalent to the statement that all boundaries are cycles. (That's why this is the right algebraization of the idea.)
+
+---
+
+## Homology
+
+.left-column[![:scale 150%](./images/ChainDeformation.png)]
+.right-column[
+* Cycles modulo Boundaries
+* Choose a minimal set of cycles (called _generators_) such that every cycle is the sum of generators and a boundary
+* The number of $k$-dimensional generators required is called the $k$th _Betti number_.
+* The list of Betti numbers is called the _Homology_.
+]
+---
+
+## Collapses
+
+Given a cell complex, there is a way of making a _reduced complex_ that has the same homology. We do this via a _collapse_:
+
+.center[![:scale 50%](./images/SingleCollapse.png)]
+
+Procedure: 
+
+* Pick any two cells $K$ and $Q$ such that $Q$ is a face of $K$.
+* Remove $K$ and $Q$ from the complex
+* For all $K'$ such that $Q$ was a face of $K'$, we add to the boundary of $K'$ the boundary of $K$.
+* The new complex has the same homology.
+* Moreover, there is a way to translate chains between the original complex and the reduced complex via so-called _chain equivalences_.
+
+---
+
+## Homology via Sequences of Collapses
+
+.center[![:scale 90%](./images/SequenceOfCollapses.png)]
+
+* Make sequence of collapses until no longer possible.
+* Then read off the Betti numbers by counting cells of each dimension.
+
+---
+
+## Generators via Reversing the Sequence of Collapses
+
+.center[![:scale 90%](./images/ReverseSequenceOfCollapses.png)]
+
+
+* To get generators we need to "lift" back to the original complex
+* The proof that a collapse yields a complex with the same homology gives us a pair of chain equivalences that allows us to do this
+* Note: the lifted generators are not uniquely defined, but depend on the sequence of collapses
+
+---
+
+class: center, middle
+
+# Part 3. Lattices of Reachable Sets
+
+.left[
+* Reachable Sets in Directed Graphs
+* Intersection and Union of Reachable Sets
+* Birkhoff's Representation Theorem
+* Strongly Connected Components
+]
+
+---
+
+## Reachable Sets in Directed Graphs
+
+.center[![:scale 80%](./images/ReachableSets.png)]
+
+* A _reachable set_ $R$ is a collection of vertices in a directed graph which do not admit any out-edges outside of the collection, i.e. $R$ such that $u \to v$ and $u \in R$ implies $v \in R$.
+
+---
+
+## Intersection and Union of Reachable Sets
+
+.center[![:scale 80%](./images/ReachableSets.png)]
+
+* **Proposition.** The intersection of reachable sets is again a reachable set.
+* **Proposition.** The union of reachable sets is again a reachable set.
+* This means reachable sets have a finite distributive lattice structure.
+
+---
+
+## Birkhoff's Representation Theorem
+
+.center[![:scale 80%](./images/ReachableSets.png)]
+
+* Representing finite distribute lattices computationally is best not done directly.
+* It suffices to store a partially ordered set of "join-irreducible" lattice elements.
+* The lattice can be recovered as the down-sets of this poset, with meet and join being intersection and union of down-sets.
+
+---
+
+## Strongly Connected Components
+
+.center[
+![:scale 80%](./images/PosetOfStronglyConnectedComponents.png)
+]
+
+* Strongly connected components (equivalence classes of vertices under the mutual-reachability relation) correspond to join-irreducible reachable sets. They are partially ordered by reachability.
+
+---
+
+class: center, middle
+
+# Part 4. Lattices of Representable Attracting Blocks
+
+.left[
+* Flows
+* Compact Global Attractor
+* Transversality Graph
+* Representable Sets
+* Attracting Blocks
+* Representable Attracting Blocks
+* Lattice of Representable Attracting Blocks
+* Reachable sets of Transversality Graphs Correspond to Attracting Blocks
+]
+
+---
+
+## Flows
+
+.center[
+![:scale 50%](./images/Flow.png) 
+
+(Figure from Wikipedia)
+]
+
+* We restrict our attention to dynamical systems governed by flows on $\mathbb{R^n}$.
+* Flows express dynamics by telling us how a point in phase space moves as time progresses
+* A flow is a continuous function $\phi : X \times \mathbb{R} \to X$ such that
+  * $\phi(\phi(x,t),s) = \phi(x,s+t)$
+  * $\phi(x, 0) = x$
+* _Phase portraits_ are useful in conveying qualitative information about the flow by sketching flow lines.
+
+---
+
+## Compact Global Attractor
+
+.center[
+![:scale 50%](./images/CompactGlobalAttractor.png)
+
+(Figure not from Wikipedia)
+]
+
+* We will also restrict our attention to cases where there is a _compact global attractor_. 
+* This is ensured if there exists a compact set $N \subset \mathbb{R}^n$ such that for all $x \in \mathbb{R}^n$, there exists $T > 0$ such that $\phi(x,[T, \infty)) \subset N$.
+* In this case the global attractor is given by $A = Inv(N,f)$. 
+
+---
+
+## Transversality Graph
+
+.center[![:scale 40%](./images/GlobalAttractorInCubicalComplex.png)]
+
+* Our setting consists of:
+  * A flow on $\mathbb{R}^d$ with a global attractor interior to a bounded rectangle $R \subset \mathbb{R}^d$
+  * A decomposition of $R$ into a cubical complex 
+
+In this setting, a _transversality graph_ is a directed graph on $d$-cells such that every edge $u \to v$ is between a pair of adjacent $d$-cells (in the sense that $u$ and $v$ share a $(d-1)$-dimensional face $w$), and for every pair of adjacent $d$-cells $u$ and $v$, there is an edge $u \to v$ unless the flow is transverse to $\text{cl }w$ in the direction from $v$ to $u$.
+
+---
+
+## Transversality Graph: Example
+
+.center[![:scale 60%](./images/2DRelativeBraidGraph.png)]
+
+---
+
+## Representable Sets
+
+.center[![:scale 50%](./images/RepresentableSet.png)]
+
+* A set is _representable_ if it can be written as a union of cells.
+
+---
+
+## Attracting Blocks
+
+.center[![:scale 50%](./images/AttractingBlock.png)]
+
+* A compact set $A$ is an _attracting block_ if $\phi(A,t) \subset \text{int }A$ for all $t > 0$.
+
+---
+
+## Representable Attracting Blocks
+
+.center[![:scale 50%](./images/RepresentableAttractingBlock.png)]
+
+* A _representable attracting block_ is a representable set that is also an attracting block.
+
+
+---
+
+## Lattice of Representable Attracting Blocks
+
+.left-column[![:scale 140%](./images/LatticeOfAttractingBlocks.png)]
+.right-column[
+* **Proposition.** The intersection of attracting blocks is again an attracting block
+* **Proposition.** The union of attracting blocks is again an attracting block
+* Given a finite set of attracting blocks, we can grind out all possible unions and intersections
+* This gives a _finite distributive lattice_, with meet and join corresponding to intersection and union, respectively.
+]
+---
+
+## Reachable sets of Transversality Graphs Correspond to Attracting Blocks
+
+.left-column[![:scale 90%](./images/TransversalityLattice.png)]
+.right-column[
+* **Proposition.** Reachable sets of a transversality graph correspond to representable attracting blocks.
+* **Theorem:** Given a transversality graph, computing the poset of strongly connected components yields the Birkhoff representation of a lattice of representable attracting blocks for the underlying dynamical system.
+]
+
+---
+
+class: center, middle
+
+# Part 5. Conley-Morse Graph
+
+.left[
+* Morse Graph
+* Attracting Block and Exit Block for a Morse Node
+* Isolating Neighborhoods and Conley Indices
+* Conley Index via Excision
+* Conley-Morse Graph
+]
+
+---
+
+## Morse Graph
+
+.left-column[
+![:scale 100%](./images/2DMorseGraph.png)
+]
+.right-column[
+* The Hasse diagram of the poset $P$ of join-irreducible representable attracting blocks is called the _Morse Graph_.
+* Call the vertices of the poset $P$ _Morse nodes_.
+]
+
+---
+
+## Attracting Block and Exit Block for a Morse Node
+
+.left-column[
+![:scale 90%](./images/MorseNodeAttractingBlock.png)
+![:scale 90%](./images/MorseNodeExitBlock.png)
+]
+.right-column[
+* Denote by $N\_p$ the attracting block corresponding to a Morse node. Call this the _attracting block for the Morse node_.
+* **Proposition.** A join-irreducible element $p$ of a lattice $\mathcal{P}$ has a unique predecessor.
+* Denote by $L\_p$ the attracting block corresponding to the unique predecessor (in the lattice) of the Morse node. Call this the _exit block for the Morse node_.
+]
+---
+
+## Isolating Neighborhoods and Conley Indices
+
+![:scale 25%](./images/MorseNodeIsolatingNeighborhood.png)
+![:scale 25%](./images/2DIndexSubcomplexes.png)
+
+For each Morse node $p \in P$, define:
+* _Combinatorial Morse Set_: $M\_p := \text{cl }(N\_p \setminus L\_p)$. 
+* _Conley Index Pair_: $I\_p := (N\_p, L\_p)$.
+
+We have:
+* **Proposition.** Combinatorial Morse sets are isolating neighborhoods, i.e. $\text{Inv}(M\_p) \subset \text{int }M\_p$.
+* **Proposition.** The collection $\text{Inv}(M\_p)$ partialled order via $P$ is a _Morse Decomposition_ of the dynamical system. 
+* **Proposition.** $I\_p$ is a Conley Index pair for $M\_p$
+
+---
+
+# Conley Index via Excision
+
+.right-column[![:scale 90%](./images/2DIndexSubcomplexes.png)]
+.left-column[
+To compute $H\_*(N\_p, L\_p)$:
+* Consider $N\_p \setminus L\_p$.
+* This gives an _index subcomplex_ 
+* Compute homology of each index subcomplex
+]
+
+---
+
+## Conley-Morse Graph
+
+.center[
+![:scale 70%](./images/2DConleyIndex.png)
+]
+
+Annotating each node of the Morse Graph with $H\_*(N\_p, L\_p)$ results in a _Conley-Morse Graph_.
+
+---
+
+
+.left-column[
+![:scale 180%](./images/ConleyIndexInterpretation.png)
+]
+.right-column[
+.right[
+## Interpreting the Conley Index
+Occam's razor approach to Conley Index:
+
+What is the simplest dynamics giving rise to this index?
+This gives us rough intuition as to what is going on.
+]
+]
+
+---
+
+class: center, middle
+
+# Part 6. Connection Matrix
+
+.left[
+* Connection Matrix Overview
+* Visualizing the Connection Matrix
+]
+
+---
+
+## Connection Matrix Overview
+
+.left-column[.center[![:scale 50%](./images/2DConleyMorseGraph.png)]]
+.right-column[.left[
+* How do the Conley Indices of Morse nodes relate?
+* Strategy: collapse complex under rule not to collapse pairs in different index subcomplexes
+* The boundary map of the resulting complex is called a _connection matrix_.
+* It gives the relationship we sought
+* We can lift chains from the reduced complex to the original to visualize it
+]]
+
+---
+
+## Visualizing the Connection Matrix
+
+.center[![:scale 80%](./images/2DConnectionMatrixVisualization.png)]
+
+---
+
+class: center, middle
+
+# Part 7. Computation
+
+.left[
+* 2D Braids Example, Lap Number Computation
+* 2D Braids Example
+* 3D Braids Example
+* Visualizing Connection Matrix in 3D Braids Example
+]
+
+---
+
+.scroll-box[
+
+## 2D Braids Example, Lap Number Computation
+
+* We can compute a lap number for each domain on a computer:
+
+```python
+from Braids import *
+diagram = BraidDiagram([ [1,3,1], [2,1,2], [3,4,3],[4,2,4]])
+```
+
+We can ask it to draw a picture of the diagram:
+
+```python
+diagram
+```
+
+![png](./images/2DCodeBraidDiagram.png)
+
+First we compute the complex:
+
+```python
+braid_complex, braid_graph = BraidComplex(diagram)
+```
+
+Next, we extract a list of 2-cells (domains) from the complex:
+
+```python
+domains = [ cell for cell in braid_complex if cell.dimension() == 2 ]
+```
+
+Now loop through each domain and call a `lap` function which the `BraidDiagram` class supports:
+
+```python
+lap_numbers = []
+for cell in domains:
+    lap_numbers.append(str(cell) + "\t\t" + str(diagram.lap(cell)))
+```
+
+Now sort the answers (to get them in a nice order) and print them out line by line:
+    
+```python
+print('\n'.join(sorted(lap_numbers)))
+```
+```python
+    (-inf,1)x(-inf,1) 0
+    (-inf,1)x(1,2)    1
+    (-inf,1)x(2,3)    2
+    (-inf,1)x(3,4)    3
+    (-inf,1)x(4,inf)  4
+    (1,2)x(-inf,1)    1
+    (1,2)x(1,2)     2
+    (1,2)x(2,3)     3
+    (1,2)x(3,4)     2
+    (1,2)x(4,inf)   3
+    (2,3)x(-inf,1)    2
+    (2,3)x(1,2)     1
+    (2,3)x(2,3)     2
+    (2,3)x(3,4)     1
+    (2,3)x(4,inf)   2
+    (3,4)x(-inf,1)    3
+    (3,4)x(1,2)     2
+    (3,4)x(2,3)     3
+    (3,4)x(3,4)     2
+    (3,4)x(4,inf)   1
+    (4,inf)x(-inf,1)  4
+    (4,inf)x(1,2)   3
+    (4,inf)x(2,3)   2
+    (4,inf)x(3,4)   1
+    (4,inf)x(4,inf)   0
+```
+]
+
+---
+
+.scroll-box[
+
+## 2D Braids Example
+
+```python
+from Braids import *
+from ConleyMorseFibration import *
+diagram = BraidDiagram([ [1,3,1], [2,1,2], [3,4,3],[4,2,4]])
+braid_complex, braid_graph = BraidComplex(diagram)
+fibration = ConleyMorseFibration(braid_complex, braid_graph)
+fibration
+```
+
+![:scale 25%](./images/2DConleyMorseFibration1.svg)
+
+```python
+from ConnectionFibration import *
+connection_fibration, (phi, psi) = ConnectionFibration(fibration)
+connection_fibration
+```
+
+![:scale 25%](./images/2DConleyMorseFibration2.svg)
+
+```python
+bd = lambda cell : connection_fibration.complex().boundary(cell)
+C = connection_fibration.complex().cells()
+print("Connection Matrix Data")
+print("======================")
+for d in [2,1,0]:
+    print("  Boundaries of " + str(d) + "-cells in Connection Fibration:")
+    print("    " + str({ c : bd(c) for c in C if c.dimension() == d}))
+```
+```python
+    Connection Matrix Data
+    ======================
+      Boundaries of 2-cells in Connection Fibration:
+        {}
+      Boundaries of 1-cells in Connection Fibration:
+        {((2, 3), (3, 3)): (1)*[{-inf}x{inf}]+(-1)*[{4}x{1}]}
+      Boundaries of 0-cells in Connection Fibration:
+        {((4, 4), (1, 1)): 0, ((-inf, -inf), (inf, inf)): 0}
+```
+]
+
+---
+
+.scroll-box[
+
+## 3D Braids Example
+
+```python
+from Braids import *
+from ConleyMorseFibration import *
+from ConnectionFibration import *
+diagram = BraidDiagram([ [1,4,1,4], [2,2,2,2], [3,3,3,3], [4,1,4,1]])
+diagram
+```
+
+![png](./images/3DConleyMorseFibration1.png)
+
+
+```python
+(complex, discrete_flow) = BraidComplex(diagram)
+fibration = ConleyMorseFibration(complex, discrete_flow)
+fibration
+```
+
+![:scale 90%](./images/3DConleyMorseFibration2.svg)
+
+```python
+connection_fibration, (phi,psi) = ConnectionFibration(fibration)
+connection_fibration
+```
+
+![:scale 90%](./images/3DConleyMorseFibration3.svg)
+ 
+## Accessing the connection matrix data
+
+To see that what we have computed is more than a Conley-Morse graph we compute the connection matrix entries:
+
+
+```python
+bd = lambda cell : connection_fibration.complex().boundary(cell)
+C = connection_fibration.complex().cells()
+print("Connection Matrix Data")
+print("======================")
+for d in [2,1,0]:
+    print("  Boundaries of " + str(d) + "-cells in Connection Fibration:")
+    print("    " + str({ c : bd(c) for c in C if c.dimension() == d}))
+```
+
+```python
+    Connection Matrix Data
+    ======================
+      Boundaries of 2-cells in Connection Fibration:
+        {((2, 2), (1, 2), (2, 3)): (1)*[(2,3)x{3}x{2}]}
+      Boundaries of 1-cells in Connection Fibration:
+        {((2, 3), (3, 3), (2, 2)): 0}
+      Boundaries of 0-cells in Connection Fibration:
+        {((1, 1), (2, 2), (3, 3)): 0}
+```
+## Lifting the generators back to the original complex
+
+The cells in the connection fibration correspond directly to original cells in the complex. However, we can also lift these cells back up to the original complex through the sequence of chain equivalences provided by the sequence of strict equivalencies. This corresponds to Franzosa's chain complex braid morphism.
+
+```python
+print('\n\n'.join([ "psi(" + str(ElementaryChain(c)) + ") = " + str(psi(ElementaryChain(c))) for c in C]))
+```
+```python
+    psi((1)*[{1}x{2}x{3}]) = (1)*[{1}x{2}x{3}]
+    psi((1)*[{2}x(1,2)x(2,3)]) = (1)*[(2,3)x{1}x(2,3)]+(1)*[{2}x(1,2)x(2,3)]+(1)*[(2,3)x(1,2)x{3}]+(-1)*[(2,3)x(1,2)x{2}]+(1)*[{3}x(1,2)x(2,3)]+(-1)*[{2}x(2,3)x(2,3)]+(-1)*[(2,3)x(2,3)x{2}]
+    psi((1)*[(2,3)x{3}x{2}]) = (1)*[(2,3)x{3}x{2}]+(1)*[{2}x{3}x(2,3)]+(-1)*[{2}x(2,3)x{3}]+(-1)*[{3}x{2}x(2,3)]+(1)*[(2,3)x{2}x{3}]+(1)*[{3}x(2,3)x{2}]
+```
+```python
+from CubicalVisualizer import *
+original_complex_cells = [ cell for critical in C for cell in psi(ElementaryChain(critical))]
+CubicalVisualizer(original_complex_cells)
+```
+]
+
+---
+
+## Visualizing Connection Matrix in 3D Braids Example
+
+![:scale 100%](./images/3DCubicalVisualizer.png)
+
+---
+
+class: center, middle
+
+## Thank you
+
+
+    </textarea>
+    <script src="thirdparty/remark.min.js"></script>
+
+    <!--- <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script> -->
+
+    <!--- <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/contrib/auto-render.min.js"></script> -->
+
+    <script src="thirdparty/katex/katex.min.js"></script>
+    <script src="thirdparty/katex/contrib/auto-render.min.js"></script> 
+
+
+    <!--- <script src="MathJax.js" type="text/javascript"></script> -->
+
+    <script>
+
+      remark.macros.scale = function (percentage) {
+        var url = this;
+        return '<img src="' + url + '" style="width: ' + percentage + '" />';
+      };
+      
+      var slideshow = remark.create({
+        highlightLanguage: 'python',
+        highlightStyle: 'tomorrow-night',
+        navigation: {
+          scroll: false // disable this troublesome feature
+        }
+      });
+      // // Setup MathJax
+      // MathJax.Hub.Config({
+      //     tex2jax: {
+      //     skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      //     }
+      // });
+      // MathJax.Hub.Queue(function() {
+      //     $(MathJax.Hub.getAllJax()).map(function(index, elem) {
+      //         return(elem.SourceElement());
+      //     }).parent().addClass('has-jax');
+      // });
+
+      // MathJax.Hub.Configured();
+
+      // kaTex support (works better than MathJax):
+      // renderMathInElement(document.body);
+      // or if you want to use $...$ for math,
+      renderMathInElement(document.body, {delimiters: [ // mind the order of delimiters(!?)
+          {left: "$$", right: "$$", display: true},
+          {left: "$", right: "$", display: false}
+       ]});
+    </script>
+  </body>
+</html>

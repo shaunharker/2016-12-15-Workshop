@@ -1,0 +1,2 @@
+include pyCHomP/js/three.js
+include pyCHomP/js/OrbitControls.js
