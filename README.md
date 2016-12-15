@@ -4,16 +4,6 @@ Shaun Harker
 
 This Github repository contains materials for the workshop at Rutgers on 2016-12-15.
 
-## What's in the repo:
-
-There are two subfolders
-
-* Talk
-* Code
-
-In `Talk` the images and html source of my talk are available.
-In `Code` the codes used to give the demonstrations may be found.
-
 ## Getting started with the code:
 
 If you have `jupyter notebook`, try using it on the `.ipynb` files and see what is going on there. Also, check out the talk which gives examples.
