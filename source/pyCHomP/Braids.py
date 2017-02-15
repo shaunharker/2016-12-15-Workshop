@@ -44,7 +44,7 @@ class BraidDiagram:
     """
     Compute the lap number for a domain
     """
-    midpoints = [ sum(domain.bounds()[j]) / 2.0 for j in (range(0,self.m) + [0]) ] 
+    midpoints = [ sum(domain.bounds()[j]) / 2.0 for j in (list(range(0,self.m)) + [0]) ] 
     return sum(self(i,j) <= midpoints[j] and self(i,j+1) >= midpoints[j+1] for j in range(0,self.m) for i in range(0,self.n))
 
   def __repr__(self):
@@ -102,9 +102,9 @@ def BraidComplex( braid_diagram ):
     # Otherwise, it has precisely 2 adjacent domains
     [u, v] = coboundary[wall]
     if braid_diagram.lap(u) <= braid_diagram.lap(v):
-      edges[u].add(v)
-    if braid_diagram.lap(u) >= braid_diagram.lap(v):
       edges[v].add(u)
+    if braid_diagram.lap(u) >= braid_diagram.lap(v):
+      edges[u].add(v)
 
   # Identify collapsed strands
   collapsed_strands = [ i for i in range(0,n) if pi(i) == i ]

@@ -1,7 +1,7 @@
 ### MorseMatchingHomotopy.py
 ### MIT LICENSE 2016 Shaun Harker
 
-import Queue
+from queue import *
 import copy
 from TopologicalSort import *
 from Chain import *
@@ -36,7 +36,7 @@ def MorseMatchingHomotopy(M, cellcomplex):
     # We arrange the priority queue for queens.
     # We use an auxiliary set "enqueued" to prevent the same queen from being
     # placed in the priority queue twice.
-    work_queue = Queue.PriorityQueue()
+    work_queue = PriorityQueue()
     enqueued = set()
     def enqueue(list_of_queens):
       for Q in list_of_queens:

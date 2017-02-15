@@ -62,7 +62,7 @@ def StronglyConnectedComponents(vertices_input, adjacencies_input):
     LOWLINK.append(link)
 
   # Main routine
-  DFS = range(1,N+1)
+  DFS = list(range(1,N+1))
   while DFS:
     u = DFS.pop()
     if u > 0:
