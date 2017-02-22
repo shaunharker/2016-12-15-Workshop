@@ -27,6 +27,9 @@ class BraidDiagram:
         if braid_skeleton[i][self.m] == braid_skeleton[j][0]:
           self.permute_[i] = j
     self.braid_skeleton_ = braid_skeleton
+    self.min_ = min([ min(braid_skeleton[i]) for i in range(0,len(braid_skeleton)) ])
+    self.max_ = max([ max(braid_skeleton[i]) for i in range(0,len(braid_skeleton)) ])
+
       
   def __call__(self, i, j):
     """
@@ -47,11 +50,28 @@ class BraidDiagram:
     midpoints = [ sum(domain.bounds()[j]) / 2.0 for j in (list(range(0,self.m)) + [0]) ] 
     return sum(self(i,j) <= midpoints[j] and self(i,j+1) >= midpoints[j+1] for j in range(0,self.m) for i in range(0,self.n))
 
-  def __repr__(self):
+  def draw(self, domain=None):
     x = np.arange(self.m+1)
     for i in range(0,self.n):
       plt.plot(x, [self(i,j) for j in range(0,self.m+1)])
+    if domain:
+      def f(x):
+        if x[0] == -float("inf") and x[1] == -float("inf"):
+          return self.min_ - 1.0
+        if x[0] == float("inf") and x[1] == float("inf"):
+          return self.max_ + 1.0
+        if x[0] == -float("inf"):
+          return x[1] - .5
+        if x[1] == float("inf"):
+          return x[0] + .5
+        return (x[0] + x[1]) / 2.0
+      strand = [ f(domain.bounds()[d]) for d in range(0, self.m) ]
+      strand = strand + [strand[0]]
+      plt.plot(x, strand, '--', color='b',)
     plt.show()
+
+  def __repr__(self):
+    self.draw()
     return "Braid Diagram"
 
 def BraidComplex( braid_diagram ):
